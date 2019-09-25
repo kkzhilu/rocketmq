@@ -25,22 +25,42 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.MessageExt;
 
+/***
+ * what is push Consumer ?
+ *     Push方式是Server端接收到消息后，主动把消息推送给Client端
+ *     优点：实时性高,处理简单
+ *
+ *     缺点：
+ *     1.首先是加大Server端的工作量，进而影响Server的性能
+ *     2.Client的处理能力各不相同，Client的状态不受Server控制，
+ *     如果Client不能及时处理Server推送过来的消息，会造成各种潜在问题
+ */
 public class PushConsumer {
 
     public static void main(String[] args) throws InterruptedException, MQClientException {
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("CID_JODIE_1");
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("KerwinBoots");
+        consumer.setNamesrvAddr("127.0.0.1:9876");
         consumer.subscribe("TopicTest", "*");
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
-        //wrong time format 2017_0422_221800
-        consumer.setConsumeTimestamp("20181109221800");
-        consumer.registerMessageListener(new MessageListenerConcurrently() {
 
+        /***
+         * 注册消息处理器:
+         *     由于当前测试的消息都是单条发送，因此参数 List<MessageExt> msgs size其实为1
+         *     且调用机制是consumer接收到消息时, 触发处理器执行, 接受了多少条，就执行了多少次
+         */
+        consumer.registerMessageListener(new MessageListenerConcurrently() {
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
-                System.out.printf("%s Receive New Messages: %s %n", Thread.currentThread().getName(), msgs);
+                // 暂时只测试单条消息传递
+                if (msgs.size() == 1) {
+                    System.out.printf("%s Receive New Messages: %s %n", Thread.currentThread().getName(), new String(msgs.get(0).getBody()));
+                } else {
+                    System.out.printf("%s Receive New Messages: %s %n", Thread.currentThread().getName(), msgs);
+                }
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
         });
+
         consumer.start();
         System.out.printf("Consumer Started.%n");
     }

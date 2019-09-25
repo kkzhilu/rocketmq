@@ -19,26 +19,34 @@ package org.apache.rocketmq.example.simple;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 
+/***
+ * 直接通过设置偏移量进行消息获取
+ */
 public class PullConsumerTest {
     public static void main(String[] args) throws MQClientException {
-        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer("please_rename_unique_group_name_5");
+        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer("KerwinBoots");
         consumer.setNamesrvAddr("127.0.0.1:9876");
         consumer.start();
 
         try {
             MessageQueue mq = new MessageQueue();
             mq.setQueueId(0);
-            mq.setTopic("TopicTest3");
-            mq.setBrokerName("vivedeMacBook-Pro.local");
+            mq.setTopic("TopicTest");
+            mq.setBrokerName("Kerwin");
 
-            long offset = 26;
-
+            long offset = 1;
             long beginTime = System.currentTimeMillis();
             PullResult pullResult = consumer.pullBlockIfNotFound(mq, null, offset, 32);
             System.out.printf("%s%n", System.currentTimeMillis() - beginTime);
             System.out.printf("%s%n", pullResult);
+            if (pullResult.getMsgFoundList() != null) {
+                for (MessageExt messageExt : pullResult.getMsgFoundList()) {
+                    System.out.printf("%s%n", "MQ is: " + new String(messageExt.getBody()));
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

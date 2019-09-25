@@ -22,21 +22,32 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 
+/***
+ * @deprecated
+ * 暂时不知道有什么用
+ */
 public class RandomAsyncCommit {
-    private final ConcurrentHashMap<MessageQueue, CachedQueue> mqCachedTable =
-        new ConcurrentHashMap<MessageQueue, CachedQueue>();
 
+    private final ConcurrentHashMap<MessageQueue, CachedQueue> mqCachedTable = new ConcurrentHashMap<>();
+
+    /***
+     * 放置消息
+     */
     public void putMessages(final MessageQueue mq, final List<MessageExt> msgs) {
         CachedQueue cachedQueue = this.mqCachedTable.get(mq);
         if (null == cachedQueue) {
             cachedQueue = new CachedQueue();
             this.mqCachedTable.put(mq, cachedQueue);
         }
+
         for (MessageExt msg : msgs) {
             cachedQueue.getMsgCachedTable().put(msg.getQueueOffset(), msg);
         }
     }
 
+    /***
+     * 移除消息
+     */
     public void removeMessage(final MessageQueue mq, long offset) {
         CachedQueue cachedQueue = this.mqCachedTable.get(mq);
         if (null != cachedQueue) {

@@ -17,20 +17,27 @@
 
 package org.apache.rocketmq.example.simple;
 
-import org.apache.rocketmq.client.consumer.MQPullConsumer;
-import org.apache.rocketmq.client.consumer.MQPullConsumerScheduleService;
-import org.apache.rocketmq.client.consumer.PullResult;
-import org.apache.rocketmq.client.consumer.PullTaskCallback;
-import org.apache.rocketmq.client.consumer.PullTaskContext;
+import org.apache.rocketmq.client.consumer.*;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 
+import java.util.List;
+
+/***
+ * RocketMQ 提供的PULL模式下面的调度服务
+ * @see PullConsumer
+ * 性质相同, 不过更加方便
+ */
 public class PullScheduleService {
 
     public static void main(String[] args) throws MQClientException {
-        final MQPullConsumerScheduleService scheduleService = new MQPullConsumerScheduleService("GroupName1");
 
+        final MQPullConsumerScheduleService scheduleService = new MQPullConsumerScheduleService("KerwinBoots");
+        scheduleService.getDefaultMQPullConsumer().setNamesrvAddr("127.0.0.1:9876");
+
+        // 负载均衡模式
         scheduleService.setMessageModel(MessageModel.CLUSTERING);
         scheduleService.registerPullTaskCallback("TopicTest", new PullTaskCallback() {
 
@@ -40,13 +47,20 @@ public class PullScheduleService {
                 try {
 
                     long offset = consumer.fetchConsumeOffset(mq, false);
-                    if (offset < 0)
+                    if (offset < 0) {
                         offset = 0;
+                    }
 
                     PullResult pullResult = consumer.pull(mq, "*", offset, 32);
                     System.out.printf("%s%n", offset + "\t" + mq + "\t" + pullResult);
                     switch (pullResult.getPullStatus()) {
                         case FOUND:
+                            List<MessageExt> msgFoundList = pullResult.getMsgFoundList();
+                            if (msgFoundList != null) {
+                                for (MessageExt messageExt : msgFoundList) {
+                                    System.out.println("MQ: " + new String(messageExt.getBody()));
+                                }
+                            }
                             break;
                         case NO_MATCHED_MSG:
                             break;
@@ -56,8 +70,8 @@ public class PullScheduleService {
                         default:
                             break;
                     }
-                    consumer.updateConsumeOffset(mq, pullResult.getNextBeginOffset());
 
+                    consumer.updateConsumeOffset(mq, pullResult.getNextBeginOffset());
                     context.setPullNextDelayTimeMillis(100);
                 } catch (Exception e) {
                     e.printStackTrace();

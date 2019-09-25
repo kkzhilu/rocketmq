@@ -16,9 +16,6 @@
  */
 package org.apache.rocketmq.example.simple;
 
-import java.io.UnsupportedEncodingException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
@@ -26,11 +23,19 @@ import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 
-public class AsyncProducer {
-    public static void main(
-        String[] args) throws MQClientException, InterruptedException, UnsupportedEncodingException {
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-        DefaultMQProducer producer = new DefaultMQProducer("Jodie_Daily_test");
+/***
+ * 基于callBack 异步方式发送消息
+ * 注意：SendCallback实现
+ */
+public class AsyncProducer {
+
+    public static void main(String[] args) throws MQClientException, InterruptedException {
+
+        DefaultMQProducer producer = new DefaultMQProducer("KerwinBoots");
+        producer.setNamesrvAddr("127.0.0.1:9876");
         producer.start();
         producer.setRetryTimesWhenSendAsyncFailed(0);
 
@@ -39,10 +44,10 @@ public class AsyncProducer {
         for (int i = 0; i < messageCount; i++) {
             try {
                 final int index = i;
-                Message msg = new Message("Jodie_topic_1023",
-                    "TagA",
-                    "OrderID188",
-                    "Hello world".getBytes(RemotingHelper.DEFAULT_CHARSET));
+                Message msg = new Message("ThreadsDemo", "Tag-1",
+                    ("Th is thread Demo. Num is: " + messageCount).getBytes(RemotingHelper.DEFAULT_CHARSET));
+
+                // 基于回调的Send方式
                 producer.send(msg, new SendCallback() {
                     @Override
                     public void onSuccess(SendResult sendResult) {
@@ -61,6 +66,7 @@ public class AsyncProducer {
                 e.printStackTrace();
             }
         }
+
         countDownLatch.await(5, TimeUnit.SECONDS);
         producer.shutdown();
     }
