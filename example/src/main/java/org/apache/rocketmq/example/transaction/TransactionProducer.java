@@ -30,15 +30,21 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+/***
+ * 博文: https://www.jianshu.com/p/cc5c10221aa1
+ */
 public class TransactionProducer {
+
     public static void main(String[] args) throws MQClientException, InterruptedException {
         TransactionListener transactionListener = new TransactionListenerImpl();
-        TransactionMQProducer producer = new TransactionMQProducer("please_rename_unique_group_name");
-        ExecutorService executorService = new ThreadPoolExecutor(2, 5, 100, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(2000), new ThreadFactory() {
+        TransactionMQProducer producer = new TransactionMQProducer("KerwinBoots");
+        producer.setNamesrvAddr("127.0.0.1:9876");
+
+        ExecutorService executorService = new ThreadPoolExecutor(2, 5, 100, TimeUnit.SECONDS, new ArrayBlockingQueue<>(2000), new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
-                thread.setName("client-transaction-msg-check-thread");
+                thread.setName("transaction-thread");
                 return thread;
             }
         });
@@ -51,8 +57,8 @@ public class TransactionProducer {
         for (int i = 0; i < 10; i++) {
             try {
                 Message msg =
-                    new Message("TopicTest1234", tags[i % tags.length], "KEY" + i,
-                        ("Hello RocketMQ " + i).getBytes(RemotingHelper.DEFAULT_CHARSET));
+                    new Message("TransactionProducer", tags[i % tags.length], "KEY" + i,
+                        ("TransactionProducer " + i).getBytes(RemotingHelper.DEFAULT_CHARSET));
                 SendResult sendResult = producer.sendMessageInTransaction(msg, null);
                 System.out.printf("%s%n", sendResult);
 
