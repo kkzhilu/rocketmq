@@ -20,6 +20,13 @@ import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
 
+/***
+ * 注意 Producer：
+ *    默认情况下不需要设置instanceName，rocketmq会使用ip@pid(pid代表jvm名字)作为唯一标示
+ *
+ *    如果同一个jvm中，不同的producer需要往不同的RocketMQ集群发送消息，需要设置不同的instanceName
+ *    原因如下：如果不设置instanceName，那么会使用ip@pid作为producer唯一标识，那么会导致多个producer内部只有一个MQClientInstance(与mq交互)实例，从而导致只往一个集群发消息。
+ */
 public class ProducerWithNamespace {
     public static void main(String[] args) throws Exception {
 
