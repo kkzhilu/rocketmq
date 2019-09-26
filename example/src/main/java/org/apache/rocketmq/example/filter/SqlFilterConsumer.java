@@ -25,11 +25,19 @@ import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
 
+/***
+ * SQL 方式过滤器 处理 tag标签 - 消费者
+ *
+ * 注意: 启用sql过滤配置
+ *       Windows版本暂时没找到对应配置位置：Don't forget to set enablePropertyFilter=true in broker
+ *       Linux版本：rocketmq-all-4.3.1\distribution
+ */
 public class SqlFilterConsumer {
 
     public static void main(String[] args) throws Exception {
 
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("please_rename_unique_group_name");
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("KerwinBoots");
+        consumer.setNamesrvAddr("127.0.0.1:9876");
 
         // Don't forget to set enablePropertyFilter=true in broker
         consumer.subscribe("SqlFilterTest",
@@ -37,7 +45,6 @@ public class SqlFilterConsumer {
                 "and (a is not null and a between 0 and 3)"));
 
         consumer.registerMessageListener(new MessageListenerConcurrently() {
-
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs,
                 ConsumeConcurrentlyContext context) {

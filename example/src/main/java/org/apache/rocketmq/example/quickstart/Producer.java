@@ -36,13 +36,13 @@ public class Producer {
          */
         producer.start();
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 5; i++) {
             try {
 
                 /*
                  * Create a message instance, specifying topic, tag and message body.
                  */
-                Message msg = new Message("TopicTest", "tagOne", ("Hello RocketMQ " + i).getBytes(RemotingHelper.DEFAULT_CHARSET));
+                Message msg = new Message("SqlFilterConsumer", "TagA", ("SqlFilterConsumer RocketMQ " + i).getBytes(RemotingHelper.DEFAULT_CHARSET));
 
                 /*
                  * Call send message to deliver message to one of brokers.
