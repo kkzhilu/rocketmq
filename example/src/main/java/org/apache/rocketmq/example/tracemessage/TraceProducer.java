@@ -23,26 +23,30 @@ import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 
+/***
+ * 是否启用轨迹跟踪
+ * 可在监控管理后台查询 消息轨迹,细节等等
+ */
 public class TraceProducer {
-    public static void main(String[] args) throws MQClientException, InterruptedException {
+    public static void main(String[] args) throws MQClientException {
 
-        DefaultMQProducer producer = new DefaultMQProducer("ProducerGroupName",true);
+        DefaultMQProducer producer = new DefaultMQProducer("KerwinBoots",true);
+        producer.setNamesrvAddr("127.0.0.1:9876");
         producer.start();
 
-        for (int i = 0; i < 128; i++)
+        for (int i = 0; i < 4; i++) {
             try {
-                {
-                    Message msg = new Message("TopicTest",
-                        "TagA",
+                Message msg = new Message("TraceProducer",
+                        "tagOne",
                         "OrderID188",
                         "Hello world".getBytes(RemotingHelper.DEFAULT_CHARSET));
-                    SendResult sendResult = producer.send(msg);
-                    System.out.printf("%s%n", sendResult);
-                }
+                SendResult sendResult = producer.send(msg);
+                System.out.printf("%s%n", sendResult);
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
 
         producer.shutdown();
     }

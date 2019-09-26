@@ -26,6 +26,9 @@ import io.openmessaging.producer.SendResult;
 import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;
 
+/***
+ * org.apache.rocketmq 依赖下尚无该部分内容
+ */
 public class SimpleProducer {
     public static void main(String[] args) {
         final MessagingAccessPoint messagingAccessPoint =
