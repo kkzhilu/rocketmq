@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 /***
  * 博文: https://www.jianshu.com/p/cc5c10221aa1
+ *       https://www.jianshu.com/p/30519addbaac
  */
 public class TransactionProducer {
 
