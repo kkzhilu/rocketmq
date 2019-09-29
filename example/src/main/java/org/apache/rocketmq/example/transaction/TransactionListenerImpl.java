@@ -26,22 +26,36 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TransactionListenerImpl implements TransactionListener {
 
-    private AtomicInteger transactionIndex = new AtomicInteger(0);
+    private final AtomicInteger transactionIndex = new AtomicInteger(0);
 
-    private ConcurrentHashMap<String, Integer> localTrans = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Integer> localTrans = new ConcurrentHashMap<>();
 
+    /***
+     * 执行本地事务方法
+     * @param   msg Half(prepare) message
+     * @param   arg Custom business parameter
+     * @return  LocalTransactionState
+     */
     @Override
     public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
-        int value = transactionIndex.getAndIncrement();
-        int status = value % 3;
-        localTrans.put(msg.getTransactionId(), status);
+        // 提交本地事物 伪代码 提交事务成功成功之后 将状态保存起来 方便事务状态回查
+        final int value = this.transactionIndex.getAndIncrement();
+        final int status = value % 3;
+        this.localTrans.put(msg.getTransactionId(), status);
         return LocalTransactionState.UNKNOW;
     }
 
+    /***
+     * 检查本地事务-回调再次处理
+     * @param  msg Check message
+     * @return LocalTransactionState
+     */
     @Override
     public LocalTransactionState checkLocalTransaction(MessageExt msg) {
-        Integer status = localTrans.get(msg.getTransactionId());
-        System.out.println("Msg: " + new String(msg.getBody()) + " :: Status: " + status);
+        System.out.println("Msg:: " + new String(msg.getBody()) + " ID: " + msg.getMsgId());
+
+        // 回调检查本地事物 伪代码
+        final Integer status = this.localTrans.get(msg.getTransactionId());
         if (null != status) {
             switch (status) {
                 case 0:
@@ -54,6 +68,7 @@ public class TransactionListenerImpl implements TransactionListener {
                     return LocalTransactionState.COMMIT_MESSAGE;
             }
         }
+
         return LocalTransactionState.COMMIT_MESSAGE;
     }
 }

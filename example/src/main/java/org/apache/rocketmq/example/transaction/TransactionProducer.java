@@ -54,15 +54,14 @@ public class TransactionProducer {
         producer.setTransactionListener(transactionListener);
         producer.start();
 
-        String[] tags = new String[] {"TagA", "TagB", "TagC", "TagD", "TagE"};
+        String tag = "TagOne";
         for (int i = 0; i < 10; i++) {
             try {
                 Message msg =
-                    new Message("TransactionProducer", tags[i % tags.length], "KEY" + i,
-                        ("TransactionProducer " + i).getBytes(RemotingHelper.DEFAULT_CHARSET));
+                    new Message("TransactionProducer", tag, "KEY" + i,
+                    ("Kerwin Transaction Demo. " + i).getBytes(RemotingHelper.DEFAULT_CHARSET));
                 SendResult sendResult = producer.sendMessageInTransaction(msg, null);
                 System.out.printf("%s%n", sendResult);
-
                 Thread.sleep(10);
             } catch (MQClientException | UnsupportedEncodingException e) {
                 e.printStackTrace();
@@ -72,6 +71,7 @@ public class TransactionProducer {
         for (int i = 0; i < 100000; i++) {
             Thread.sleep(1000);
         }
+
         producer.shutdown();
     }
 }
