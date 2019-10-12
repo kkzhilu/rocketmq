@@ -45,22 +45,39 @@ import org.apache.rocketmq.common.protocol.route.TopicRouteData;
 import org.apache.rocketmq.common.sysflag.TopicSysFlag;
 import org.apache.rocketmq.remoting.common.RemotingUtil;
 
+/***
+ * NameServer 数据的载体，记录 Broker、Topic 等信息
+ */
 public class RouteInfoManager {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
+
+    // 默认连接时长
     private final static long BROKER_CHANNEL_EXPIRED_TIME = 1000 * 60 * 2;
+
+    // 读写锁，用以保护下面的普通的map容器
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    // 主题与队列关系，记录一个主题的队列分布在哪些Broker上，每个Broker上存在该主题的队列个数
     private final HashMap<String/* topic */, List<QueueData>> topicQueueTable;
+
+    // brokerAddrTable,所有 Broker 信息，使用 brokerName 当key, BrokerData 信息描述每一个 broker 信息
     private final HashMap<String/* brokerName */, BrokerData> brokerAddrTable;
+
+    // clusterAddrTable，broker 集群信息，每个集群包含哪些 Broker
     private final HashMap<String/* clusterName */, Set<String/* brokerName */>> clusterAddrTable;
+
+    // brokerLiveTable，当前存活的 Broker
     private final HashMap<String/* brokerAddr */, BrokerLiveInfo> brokerLiveTable;
+
+    // brokerLiveTable，过滤
     private final HashMap<String/* brokerAddr */, List<String>/* Filter Server */> filterServerTable;
 
     public RouteInfoManager() {
-        this.topicQueueTable = new HashMap<String, List<QueueData>>(1024);
-        this.brokerAddrTable = new HashMap<String, BrokerData>(128);
-        this.clusterAddrTable = new HashMap<String, Set<String>>(32);
-        this.brokerLiveTable = new HashMap<String, BrokerLiveInfo>(256);
-        this.filterServerTable = new HashMap<String, List<String>>(256);
+        this.topicQueueTable = new HashMap<>(1024);
+        this.brokerAddrTable = new HashMap<>(128);
+        this.clusterAddrTable = new HashMap<>(32);
+        this.brokerLiveTable = new HashMap<>(256);
+        this.filterServerTable = new HashMap<>(256);
     }
 
     public byte[] getAllClusterInfo() {
@@ -426,6 +443,9 @@ public class RouteInfoManager {
         return null;
     }
 
+    /***
+     * 维护当前存活的Broker信息
+     */
     public void scanNotActiveBroker() {
         Iterator<Entry<String, BrokerLiveInfo>> it = this.brokerLiveTable.entrySet().iterator();
         while (it.hasNext()) {

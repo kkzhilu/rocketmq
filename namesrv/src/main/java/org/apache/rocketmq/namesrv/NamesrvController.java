@@ -42,8 +42,10 @@ import org.apache.rocketmq.srvutil.FileWatchService;
 public class NamesrvController {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
 
+    // NameServer配置项
     private final NamesrvConfig namesrvConfig;
 
+    // Netty服务器的配置文件
     private final NettyServerConfig nettyServerConfig;
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl(
@@ -84,6 +86,9 @@ public class NamesrvController {
 
         this.registerProcessor();
 
+        /***************************************************************************/
+        // NameServer 两个定时任务 -> 1. 打印KVConfig信息/10s
+        //                           2.维护当前存活的Broker信息/10s
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -99,6 +104,7 @@ public class NamesrvController {
                 NamesrvController.this.kvConfigManager.printAllPeriodically();
             }
         }, 1, 10, TimeUnit.MINUTES);
+        /***************************************************************************/
 
         if (TlsSystemConfig.tlsMode != TlsMode.DISABLED) {
             // Register a listener to reload SslContext

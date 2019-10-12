@@ -16,26 +16,30 @@
  */
 package org.apache.rocketmq.namesrv.kvconfig;
 
+import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.constant.LoggerName;
+import org.apache.rocketmq.common.protocol.body.KVTable;
+import org.apache.rocketmq.logging.InternalLogger;
+import org.apache.rocketmq.logging.InternalLoggerFactory;
+import org.apache.rocketmq.namesrv.NamesrvController;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.apache.rocketmq.common.MixAll;
-import org.apache.rocketmq.common.constant.LoggerName;
-import org.apache.rocketmq.logging.InternalLogger;
-import org.apache.rocketmq.logging.InternalLoggerFactory;
-import org.apache.rocketmq.common.protocol.body.KVTable;
-import org.apache.rocketmq.namesrv.NamesrvController;
+
+/***
+ * 读取或变更NameServer的配置属性
+ */
 public class KVConfigManager {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
 
     private final NamesrvController namesrvController;
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    private final HashMap<String/* Namespace */, HashMap<String/* Key */, String/* Value */>> configTable =
-        new HashMap<String, HashMap<String, String>>();
+    private final HashMap<String/* Namespace */, HashMap<String/* Key */, String/* Value */>> configTable = new HashMap<>();
 
     public KVConfigManager(NamesrvController namesrvController) {
         this.namesrvController = namesrvController;
@@ -169,6 +173,9 @@ public class KVConfigManager {
         return null;
     }
 
+    /***
+     * 打印KVConfig信息
+     */
     public void printAllPeriodically() {
         try {
             this.lock.readLock().lockInterruptibly();

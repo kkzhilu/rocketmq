@@ -14,11 +14,11 @@ import java.util.List;
  * ******************************
  * author：      柯贤铭
  * createTime:   2019/9/29 10:22
- * description:  TransactionMQCosumer
+ * description:  TransactionMQConsumer
  * version:      V1.0
  * ******************************
  */
-public class TransactionMQCosumer {
+public class TransactionMQConsumer {
 
     public static void main(String[] args) throws MQClientException {
         DefaultMQPushConsumer mqPushConsumer = new DefaultMQPushConsumer("KerwinBoots");

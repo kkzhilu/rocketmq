@@ -23,6 +23,9 @@ import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.namesrv.NamesrvController;
 import org.apache.rocketmq.remoting.ChannelEventListener;
 
+/***
+ * 通道在发送异常时的回调方法（Nameserver与 Broker的连接通道在关闭、通道发送异常、通道空闲时），在上述数据结构中移除已宕机的 Broker
+ */
 public class BrokerHousekeepingService implements ChannelEventListener {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
     private final NamesrvController namesrvController;
@@ -31,20 +34,24 @@ public class BrokerHousekeepingService implements ChannelEventListener {
         this.namesrvController = namesrvController;
     }
 
+    // 通过连接
     @Override
     public void onChannelConnect(String remoteAddr, Channel channel) {
     }
 
+    // 通过关闭
     @Override
     public void onChannelClose(String remoteAddr, Channel channel) {
         this.namesrvController.getRouteInfoManager().onChannelDestroy(remoteAddr, channel);
     }
 
+    // 通道异常
     @Override
     public void onChannelException(String remoteAddr, Channel channel) {
         this.namesrvController.getRouteInfoManager().onChannelDestroy(remoteAddr, channel);
     }
 
+    // 通道空闲
     @Override
     public void onChannelIdle(String remoteAddr, Channel channel) {
         this.namesrvController.getRouteInfoManager().onChannelDestroy(remoteAddr, channel);
